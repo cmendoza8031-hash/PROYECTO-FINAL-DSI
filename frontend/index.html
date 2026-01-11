@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión Académica</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --sidebar-bg: #1a1d20;
+        }
+        body { background-color: #f8f9fa; }
+        .sidebar { 
+            min-height: 100vh; 
+            background-color: var(--sidebar-bg); 
+            display: flex;
+            flex-direction: column;
+        }
+        .nav-link { 
+            cursor: pointer; 
+            color: rgba(255,255,255,0.7); 
+            transition: 0.3s;
+        }
+        .nav-link:hover { color: white; background-color: rgba(255,255,255,0.1); border-radius: 5px; }
+        .nav-link.active { color: white; background-color: #0d6efd; border-radius: 5px; }
+        
+        /* Ajuste del botón salir */
+        .logout-container {
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto; /* Empuja el botón al fondo */
+            text-align: center;
+        }
+        .btn-salir {
+            width: auto;
+            padding: 5px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="vistaLogin" class="container d-flex justify-content-center align-items-center vh-100">
+        <div class="card shadow-lg p-4" style="width: 380px; border-radius: 15px;">
+            <div class="text-center mb-4">
+                <i class="bi bi-person-badge-fill display-4 text-primary"></i>
+                <h3 class="fw-bold mt-2">Panel de Control</h3>
+                <p class="text-muted">Ingrese sus credenciales</p>
+            </div>
+            <form id="formLogin">
+                <div class="mb-3">
+                    <label class="form-label">Cédula</label>
+                    <input type="text" id="loginCedula" class="form-control" placeholder="Ej: 1312345678" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" id="loginClave" class="form-control" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">Ingresar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="vistaDashboard" class="d-none container-fluid">
+        <div class="row">
+            <div class="col-md-2 p-0 sidebar text-white position-fixed">
+                <div class="p-4 border-bottom border-secondary text-center">
+                    <h5 class="fw-bold m-0 text-primary">PANEL DE ADMINISTRACION</h5>
+                </div>
+                <ul class="nav flex-column p-3 gap-2">
+                    <li class="nav-item">
+                        <a id="nav-u" class="nav-link active" onclick="cambiarVista('usuarios')">
+                            <i class="bi bi-people-fill me-2"></i> Usuarios
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav-a" class="nav-link" onclick="cambiarVista('asignatura')">
+                            <i class="bi bi-journal-bookmark-fill me-2"></i> Asignaturas
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="nav-p" class="nav-link" onclick="cambiarVista('perfil')">
+                            <i class="bi bi-person-circle me-2"></i> Mi Perfil
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="logout-container">
+                    <button class="btn btn-outline-danger btn-salir shadow-sm" onclick="location.reload()">
+                        <i class="bi bi-box-arrow-left me-2"></i> Salir
+                    </button>
+                </div>
+            </div>
+
+            <div class="col-md-10 offset-md-2 p-4">
+                
+                <div id="seccionUsuarios">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold">Gestión de Usuarios</h4>
+                        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalUsuario">
+                            <i class="bi bi-plus-lg me-1"></i> Nuevo Usuario
+                        </button>
+                    </div>
+                    <div class="card shadow-sm">
+                        <table class="table table-hover m-0 text-center">
+                            <thead class="table-dark">
+                                <tr><th>Cédula</th><th>Nombre</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody id="tablaUsuarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="seccionAsignatura" class="d-none">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold">Gestión de Asignaturas</h4>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalAsignatura">
+                            <i class="bi bi-journal-plus me-1"></i> Nueva Asignatura
+                        </button>
+                    </div>
+                    <div class="card shadow-sm">
+                        <table class="table table-hover m-0 text-center">
+                            <thead class="table-primary">
+                                <tr><th>Código</th><th>Nombre</th><th>Créditos</th><th>Acciones</th></tr>
+                            </thead>
+                            <tbody id="tablaAsignatura"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="seccionInscripciones" class="d-none">
+                    <div class="card p-4 shadow-sm border-0">
+                        <div class="d-flex align-items-center mb-4">
+                            <button class="btn btn-outline-secondary btn-sm me-3" onclick="cambiarVista('asignatura')">
+                                <i class="bi bi-arrow-left"></i>
+                            </button>
+                            <h4 class="m-0 fw-bold">Inscribir en: <span id="materiaTitulo" class="text-primary"></span></h4>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="bg-light p-3 rounded">
+                                    <h6 class="fw-bold mb-3 text-secondary text-uppercase" style="font-size: 0.8rem;">Datos del Estudiante</h6>
+                                    <form id="formNuevaInsc">
+                                        <input type="hidden" id="insIdAsig">
+                                        <div class="mb-2">
+                                            <input type="text" id="insCedulaEst" class="form-control" placeholder="Cédula" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <input type="text" id="insNombreEst" class="form-control" placeholder="Nombre completo" required>
+                                        </div>
+                                        <div class="mb-2">
+                                            <input type="text" id="insPeriodo" class="form-control" placeholder="Periodo (ej: 2026-1)" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="small text-muted">Nota Inicial:</label>
+                                            <input type="number" id="insNota" class="form-control" step="0.1" value="0.0">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary w-100 fw-bold">Inscribir Ahora</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div class="col-md-8 px-4">
+                                <h6 class="fw-bold mb-3 text-secondary text-uppercase" style="font-size: 0.8rem;">Lista de Inscritos</h6>
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle">
+                                        <thead class="text-muted" style="font-size: 0.9rem;">
+                                            <tr><th>Estudiante</th><th class="text-center">Periodo</th><th class="text-center">Nota</th></tr>
+                                        </thead>
+                                        <tbody id="tablaInscritos"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="seccionPerfil" class="d-none text-center p-5">
+                    <div class="card shadow-sm p-4 d-inline-block" style="width: 100%; max-width: 400px;">
+                        <i class="bi bi-person-circle display-1 text-primary mb-3"></i>
+                        <h2 id="perfilNombre" class="fw-bold"></h2>
+                        <h5 id="perfilCedula" class="text-muted"></h5>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="modalUsuario" tabindex="-1">
+        <div class="modal-dialog"><form id="formUsuario" class="modal-content">
+            <div class="modal-header bg-success text-white"><h5>Nuevo Usuario Admin</h5></div>
+            <div class="modal-body">
+                <input type="text" id="userCedula" class="form-control mb-2" placeholder="Cédula" required>
+                <input type="text" id="userNombre" class="form-control mb-2" placeholder="Nombre completo" required>
+                <input type="password" id="userClave" class="form-control" placeholder="Contraseña de acceso" required>
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-success px-4">Guardar</button></div>
+        </form></div>
+    </div>
+
+    <div class="modal fade" id="modalAsignatura" tabindex="-1">
+        <div class="modal-dialog"><form id="formAsignatura" class="modal-content">
+            <div class="modal-header bg-primary text-white"><h5>Nueva Asignatura</h5></div>
+            <div class="modal-body">
+                <input type="text" id="asigCodigo" class="form-control mb-2" placeholder="Código (ej: MAT-01)" required>
+                <input type="text" id="asigNombre" class="form-control mb-2" placeholder="Nombre de materia" required>
+                <input type="number" id="asigCreditos" class="form-control" placeholder="Número de créditos" required>
+            </div>
+            <div class="modal-footer"><button type="submit" class="btn btn-primary px-4">Guardar</button></div>
+        </form></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script type="module" src="main.js"></script>
+</body>
+</html>
